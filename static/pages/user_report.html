@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="content-header">
+        <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+            <h1 class="m-0">Student Report</h1>
+            </div>
+        </div>
+        </div>
+    </div>
+    <section class = "content">
+        <div class="container">
+            <div class="form-group">
+                <label for="name-filter">Select student:</label>
+                <select id="name-filter" class="form-control" onchange="filterData();line();barChart();actChart()">
+                    <!-- Populate dropdown options dynamically using JavaScript -->
+                </select>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div id="data-form">
+                        <div class="form-row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="age">Status</label>
+                                    <input type="text" id="intervention" class="form-control data-field" data-field-name="intervention" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="age">Age</label>
+                                <input type="text" id="age" class="form-control data-field" data-field-name="age" readonly>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <input type="text" id="gender" class="form-control data-field" data-field-name="gender" readonly>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="education">Education</label>
+                                <input type="text" id="education" class="form-control data-field" data-field-name="education" readonly>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="deprivationBand">Deprivation Band</label>
+                                <input type="text" id="deprivation" class="form-control data-field" data-field-name="deprivation" readonly>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="credits">Units Enrolled</label>
+                                <input type="text" id="credits" class="form-control data-field" data-field-name="credits" readonly>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="disability">Disability</label>
+                                <input type="text" id="disability" class="form-control data-field" data-field-name="disability" readonly>
+                            </div>
+                        </div>
+                        </div>
+                        <!-- Add more form fields as needed -->
+                    </div>
+                </div>
+            </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col">
+                            <div class="card card-success">
+                                <div class="card-header">
+                                    <h3 class="card-title">Student Monthly Engagement</h3>
+                                </div>
+                                <div class="card-body p-3"> <!-- Add p-3 class for padding -->
+                                    <div class="chart">
+                                        <canvas id="engagementChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card card-success">
+                                <div class="card-header">
+                                    <h3 class="card-title">Student Average per Activity</h3>
+                                </div>
+                                <div class="card-body p-3"> <!-- Add p-3 class for padding -->
+                                    <div class="chart">
+                                        <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="card card-success">
+                                <div class="card-header">
+                                    <h3 class="card-title">Student Activity Engagement</h3>
+                                </div>
+                                <div class="card-body p-3"> <!-- Add p-3 class for padding -->
+                                    <div class="chart">
+                                        <canvas id="actChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </section>
+    <script src="plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="dist/js/adminlte.js"></script>
+    
+    <!-- OPTIONAL SCRIPTS -->
+    <script src="plugins/chart.js/Chart.min.js"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="dist/js/demo.js"></script>
+<script>
+      // Sample data array
+      var dataArray = [];
+      var storedData = sessionStorage.getItem('tableData');
+      if (storedData) {
+        dataArray = JSON.parse(storedData);
+      }
+
+    // Function to populate dropdown options
+    function populateDropdown() {
+        var dropdown = document.getElementById("name-filter");
+        // Clear existing options
+        dropdown.innerHTML = "";
+
+        // Create options based on data array
+        dataArray.forEach(function(data, index) {
+            var option = document.createElement("option");
+            option.value = index;
+            option.text = data.student_id;
+            dropdown.appendChild(option);
+        });
+
+        // Set the first data as the default value
+        if (dataArray.length > 0) {
+            dropdown.value = 0;
+            filterData();
+        }
+    }
+
+    // function populateDropdown() {
+    //     var dropdown = document.getElementById("name-filter");
+    //     var currentRow = localStorage.getItem("currentRowValue");
+    //     if (currentRow !== null || currentRow !== undefined) {
+    //         // `currentRow` does not exist in localStorage
+    //         var option = document.createElement("option");
+    //         option.text = currentRow;
+    //         filterData();
+    //         localStorage.removeItem("currentRowValue");
+    //         console.log("Current");
+    //     }
+    //     else{
+    //         dropdown.innerHTML = "";
+
+    //     // Create options based on data array
+    //     dataArray.forEach(function(data, index) {
+    //         var option = document.createElement("option");
+    //         option.value = index;
+    //         option.text = data.student_id;
+    //         dropdown.appendChild(option);
+    //     });
+
+    //     // Set the first data as the default value
+    //     if (dataArray.length > 0) {
+    //         dropdown.value = 0;
+    //         filterData();
+    //     }
+
+    //     }
+    //     // Clear existing options
+        
+    // }
+
+    // Function to filter and display data based on selected name
+    function filterData() {
+        var selectedNameIndex = document.getElementById("name-filter").value;
+        // Find the matching data object
+        var selectedData = dataArray[selectedNameIndex];
+        displayData(selectedData);
+    }
+
+    // Function to display data in the form
+    function displayData(data) {
+        var formFields = document.getElementsByClassName("data-field");
+
+        // Set the values of form fields based on data
+        for (var i = 0; i < formFields.length; i++) {
+            var fieldName = formFields[i].getAttribute("data-field-name");
+
+            if (fieldName && data.hasOwnProperty(fieldName)) {
+                formFields[i].value = data[fieldName];
+            } else {
+                formFields[i].value = "";
+            }
+        }
+    }
+
+// Initial setup when the page loads
+    displayData(dataArray);
+    populateDropdown();
+    function line() {
+    'use strict'
+
+    var ticksStyle = {
+        fontColor: '#495057',
+        fontStyle: 'bold'
+    }
+
+    var selectedNameIndex = document.getElementById("name-filter").value;
+    var selectedData = dataArray[selectedNameIndex];
+    var mode = 'index'
+    var intersect = true
+    var $engagementChart = $('#engagementChart')
+    // eslint-disable-next-line no-unused-vars
+    
+    var engagementChart = new Chart($engagementChart, {
+        data: {
+        labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6', 'Month 7', 'Month 8', 'Month 9'],
+        datasets: [{
+            type: 'line',
+            data: [selectedData.eng_data[0], selectedData.eng_data[1], selectedData.eng_data[2], selectedData.eng_data[3], selectedData.engagement[4],
+            selectedData.engagement[5], selectedData.engagement[6], selectedData.engagement[7], selectedData.engagement[8], selectedData.engagement[9]],
+            backgroundColor: 'transparent',
+            borderColor: '#007bff',
+            pointBorderColor: '#007bff',
+            pointBackgroundColor: '#007bff',
+            fill: false
+            // pointHoverBackgroundColor: '#007bff',
+            // pointHoverBorderColor    : '#007bff'
+        }]
+        },
+        options: {
+        maintainAspectRatio: false,
+        tooltips: {
+            mode: mode,
+            intersect: intersect
+        },
+        events: [],
+        hover: {
+            mode: mode,
+            intersect: intersect
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+            // display: false,
+            gridLines: {
+                display: true,
+                lineWidth: '4px',
+                color: 'rgba(0, 0, 0, .2)',
+            },
+            ticks: $.extend({
+                beginAtZero: true,
+                suggestedMax: 200,
+                padding: 10
+            }, ticksStyle)
+            }],
+            xAxes: [{
+            display: true,
+            gridLines: {
+                display: false
+            },
+            ticks: ticksStyle
+            }]
+        }
+        }
+    })
+    }
+    function barChart(){
+        var selectedNameIndex = document.getElementById("name-filter").value;
+        var selectedData = dataArray[selectedNameIndex];
+        var ctx = document.getElementById('barChart').getContext('2d');
+        var data = {
+            labels: ['Activity 1', 'Activity 2', 'Activity 3', 'Activity 4', 'Activity 5',
+                     'Activity 6', 'Activity 7', 'Activity 8', 'Activity 9', 'Activity 10' ],
+            datasets: [{
+                label: 'Average',
+                data: [selectedData.average_data[0], selectedData.average_data[1], selectedData.average_data[2], selectedData.average_data[3], 
+                    selectedData.average_data[4], selectedData.average_data[5], selectedData.average_data[6], selectedData.average_data[7],
+                    selectedData.average_data[8], selectedData.average_data[9]],
+                backgroundColor: 'rgba(0, 123, 255, 0.7)', // Customize the bar color
+                borderWidth: 1
+            }]
+        };
+
+        // Configure the chart options
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            events: []
+        };
+
+        // Create the bar chart
+        var barChart = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+    }
+    function actChart(){
+        var selectedNameIndex = document.getElementById("name-filter").value;
+        var selectedData = dataArray[selectedNameIndex];
+        var ctx = document.getElementById('actChart').getContext('2d');
+        var data = {
+            labels: ['Forum', 'Glossary', 'Homepage', 'OUCollaborate', 'OUContent', 'OUContent',
+                     'Quiz', 'Resource', 'Subpage', 'Page', 'URL' ],
+            datasets: [{
+                label: 'Count',
+                data: [selectedData.act_data[0], selectedData.act_data[1], selectedData.act_data[2], selectedData.act_data[3], 
+                    selectedData.act_data[4], selectedData.act_data[5], selectedData.act_data[6], selectedData.act_data[7],
+                    selectedData.act_data[8], selectedData.act_data[9], selectedData.act_data[10]],
+                backgroundColor: 'rgba(0, 123, 255, 0.7)', // Customize the bar color
+                borderWidth: 1
+            }]
+        };
+        console.log(selectedData.act_data[0]);
+        // Configure the chart options
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            events: []
+        };
+
+        // Create the bar chart
+        var barChart = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+    }
+    line();
+    barChart();
+    actChart();
+    </script>
+</body>
+</html>
