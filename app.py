@@ -5,6 +5,10 @@ from flask import Flask, render_template, request, session, jsonify
 from sklearn.compose import make_column_transformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 app = Flask(__name__)
 app.secret_key = 'my_secret_key_123'
 
@@ -20,9 +24,7 @@ preprocessor = make_column_transformer(
     (cat, ['Gender', 'Education', 'Deprivation', 'Disability', 'Age'])
 )
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+
 
 # Route to handle file upload and data processing
 @app.route('/upload', methods=['POST'])
@@ -73,4 +75,4 @@ def predict():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, host='0.0.0.0')
